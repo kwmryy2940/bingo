@@ -42,8 +42,8 @@
           >
             <template
               v-if="
-                selectedNumbers.length > 0 &&
-                selectedNumbers.includes(col + (row - 1) * 15)
+                candidateNumbers.length > 0 &&
+                !candidateNumbers.includes(col + (row - 1) * 15)
               "
             >
               <div class="text-red bg-gray">
@@ -61,10 +61,9 @@
 </template>
 
 <script setup>
-import { onMounted, ref, watch } from "vue";
+import { ref, watch } from "vue";
 
 const selectedNumber = ref(null); // 抽選された数字
-const selectedNumbers = ref([]); // 抽選された数字群
 const candidateNumbers = ref(Array.from({ length: 75 }, (_, i) => i + 1)); // 抽選対象の数字
 const isSelectionStarted = ref(false); // 抽選状態を管理する変数
 const execButtonText = ref("start"); // 抽選開始・終了ボタンのテキスト
@@ -77,19 +76,17 @@ watch(isSelectionStarted, (val) => {
   // 抽選開始
   if (val) {
     execButtonText.value = "stop";
-    isResetDisable.value=true;  // 抽選中はリセットできないようにする
+    isResetDisable.value = true; // 抽選中はリセットできないようにする
     selectNumbers();
   }
   // 抽選終了
   else {
     execButtonText.value = "start";
-    isResetDisable.value=false;
+    isResetDisable.value = false;
     clearInterval(selectionTimer);
 
     // 抽選された数字を配列から除外
     removeSelectedNumber();
-    // 抽選された数字を抽選済み配列に格納
-    selectedNumbers.value.push(selectedNumber.value);
   }
 });
 
@@ -111,21 +108,5 @@ function removeSelectedNumber() {
 function resetSelection() {
   selectedNumber.value = null;
   candidateNumbers.value = Array.from({ length: 75 }, (_, i) => i + 1);
-  selectedNumbers.value = [];
 }
-
-onMounted(() => {});
 </script>
-
-<style scoped>
-.relative {
-  position: relative;
-}
-
-.overlay-icon {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-</style>
