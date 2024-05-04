@@ -5,8 +5,7 @@
       <v-card
         height="45vh"
         width="45vh"
-        class="d-flex justify-center align-center font-weight-bold text-red"
-        style="font-size: 216px"
+        class="d-flex justify-center align-center text-h1 font-weight-bold text-red"
       >
         {{ selectedNumber }}
       </v-card>
@@ -115,8 +114,6 @@ function resetSelection() {
   // ローカルストレージの抽選済みの数字をクリア
   nuumberStore.clearSelectedNumberInfo();
 }
-
-function highlighted() {}
 
 onMounted(() => {
   if (selectedNumberInfo.value.length > 0) {
