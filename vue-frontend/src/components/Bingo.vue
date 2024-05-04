@@ -1,5 +1,5 @@
 <template>
-  <div id="top">
+  <div id="top" class="bg-green-lighten-4">
     <!-- 抽選された数字を表示するエリア -->
     <v-container fluid fill-height class="d-flex align-center justify-center">
       <v-card
@@ -33,26 +33,23 @@
 
     <!-- 1~75の数字を表示するエリア -->
     <v-sheet v-for="row in 5">
-      <v-container fluid fill-height class="d-flex align-center justify-center">
+      <v-container
+        fluid
+        fill-height
+        class="d-flex align-center justify-center bg-green-lighten-4"
+      >
         <v-row>
           <v-col
             v-model="candidateNumbers"
-            class="text-center font-weight-bold"
             v-for="col in 15"
-          >
-            <template
-              v-if="
+            class="number-cell"
+            :class="{
+              highlighted:
                 candidateNumbers.length > 0 &&
-                !candidateNumbers.includes(col + (row - 1) * 15)
-              "
-            >
-              <div class="text-red bg-gray">
-                {{ col + (row - 1) * 15 }}
-              </div>
-            </template>
-            <template v-else>
-              {{ col + (row - 1) * 15 }}
-            </template>
+                !candidateNumbers.includes(col + (row - 1) * 15),
+            }"
+          >
+          {{ col + (row - 1) * 15 }}
           </v-col>
         </v-row>
       </v-container>
@@ -61,13 +58,17 @@
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
+import { useNumberStore } from "../store/NumberStore.js";
 
 const selectedNumber = ref(null); // 抽選された数字
 const candidateNumbers = ref(Array.from({ length: 75 }, (_, i) => i + 1)); // 抽選対象の数字
 const isSelectionStarted = ref(false); // 抽選状態を管理する変数
 const execButtonText = ref("start"); // 抽選開始・終了ボタンのテキスト
 const isResetDisable = ref(false); // リセットボタンの活性を管理する変数
+
+const nuumberStore = useNumberStore(); // ローカルストレージに抽選済みの数字を保存しておくストア
+const selectedNumberInfo = computed(() => nuumberStore.selectedNumberInfo); // ローカルストレージに保存されている抽選済みの数字リスト
 
 let selectionTimer = null; // 抽選タイマー用変数
 
@@ -84,6 +85,9 @@ watch(isSelectionStarted, (val) => {
     execButtonText.value = "start";
     isResetDisable.value = false;
     clearInterval(selectionTimer);
+
+    // 抽選済みの数字をローカルストレージに保存
+    nuumberStore.setSelectedNumberInfo(selectedNumber.value);
 
     // 抽選された数字を配列から除外
     removeSelectedNumber();
@@ -108,5 +112,33 @@ function removeSelectedNumber() {
 function resetSelection() {
   selectedNumber.value = null;
   candidateNumbers.value = Array.from({ length: 75 }, (_, i) => i + 1);
+  // ローカルストレージの抽選済みの数字をクリア
+  nuumberStore.clearSelectedNumberInfo();
 }
+
+function highlighted() {}
+
+onMounted(() => {
+  if (selectedNumberInfo.value.length > 0) {
+    // ローカルストレージに保存されている抽選済みの数字を抽選対象から除外
+    selectedNumberInfo.value.forEach((element) => {
+      const index = candidateNumbers.value.indexOf(element);
+      candidateNumbers.value.splice(index, 1);
+    });
+  }
+});
 </script>
+
+<style scoped>
+.number-cell {
+  border: 1px solid #ccc;
+  border-radius: 32px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.highlighted {
+  background-color: grey;
+  color: red;
+}
+</style>
